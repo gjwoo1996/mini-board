@@ -1,0 +1,71 @@
+services:
+  workspace:
+    container_name: mini_board_devcontainer_workspace
+    image: mcr.microsoft.com/devcontainers/base:dev-noble
+
+    environment:
+      TZ: "Asia/Seoul"
+      NODE_ENV: development
+      IS_DEV_CONTAINER: true
+      ENABLE_AUTO_SYNC: true
+      DIR_PATHS_TO_CHANGE_OWNER: ${CONTAINER_NODE_MODULES_DIR_PATH}
+    ports:
+      - "3000:3000"
+      - "15173:15173"
+
+    command: sleep infinity
+
+    volumes:
+      # Workspace Cache
+      - ..:${containerWorkspaceFolder}:cached
+
+  elasticsearch:
+    container_name: miniboard_elasticsearch
+    build:
+      context: ./
+      dockerfile: Dockerfile.elasticsearch
+    environment:
+      # 엘라스틱서치가 메모리 사용이 많기때문에 heap설정은 필수다.
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+      discovery.type: single-node
+      xpack.license.self_generated.type: basic
+      xpack.security.enabled: false
+    ports:
+      - "9200:9200"
+    volumes:
+      # Named Volume
+      ## Elasticsearch Data
+      - miniboard.Elasticsearch.mcp.data:/usr/share/elasticsearch/data
+  kibana:
+    container_name: miniboard_elasticsearch_kibana
+    image: docker.elastic.co/kibana/kibana:9.2.1
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+
+  mysql:
+    container_name: miniboard_mysql
+    image: mysql:8.0
+    ports:
+      - "13306:3306"
+    volumes:
+      - MySQL.miniboard.data:/var/lib/mysql
+    command: --default-authentication-plugin=mysql_native_password --bind-address=0.0.0.0
+    environment:
+      - TZ=Asia/Seoul
+      - MYSQL_ROOT_PASSWORD=root1234
+      - MYSQL_DATABASE=testDB
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=1234
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  miniboard.Elasticsearch.mcp.data:
+  MySQL.miniboard.data:
+
