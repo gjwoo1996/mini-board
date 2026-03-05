@@ -51,7 +51,7 @@ export function RealTimeKeywords() {
   };
 
   return (
-    <aside className="hidden w-64 shrink-0 lg:block">
+    <aside className="hidden w-56 shrink-0 lg:block">
       <div className="sticky top-24 rounded-xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900">
         <h2 className="mb-3 text-sm font-semibold text-slate-900 dark:text-white">
           실시간 인기키워드

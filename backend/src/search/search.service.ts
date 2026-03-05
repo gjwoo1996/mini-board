@@ -126,6 +126,8 @@ export class SearchService implements OnModuleInit {
           fields: ['title^3', 'content', 'tags^2', 'categoryName.text'],
           type: 'best_fields',
           operator: 'or',
+          minimum_should_match: '50%',
+          fuzziness: 'AUTO',
         },
       },
     ];
@@ -138,7 +140,16 @@ export class SearchService implements OnModuleInit {
       from,
       size,
       query: { bool: { must } },
-      sort: [{ createdAt: 'desc' }],
+      sort: [{ _score: { order: 'desc' } }, { createdAt: { order: 'desc' } }],
+      highlight: {
+        fields: {
+          title: { fragment_size: 200, number_of_fragments: 1 },
+          content: { fragment_size: 150, number_of_fragments: 2 },
+        },
+        pre_tags: ['<mark>'],
+        post_tags: ['</mark>'],
+      },
+      track_total_hits: true,
     });
 
     type EsSource = {
@@ -147,13 +158,24 @@ export class SearchService implements OnModuleInit {
       categoryName?: string;
       createdAt?: string;
     };
+    type EsHit = {
+      _source?: EsSource;
+      highlight?: { title?: string[]; content?: string[] };
+    };
     const items = (hits.hits ?? []).map((h) => {
-      const src = h._source as EsSource | undefined;
+      const hit = h as EsHit;
+      const src = hit._source;
       return {
         id: src?.id,
         title: src?.title,
         categoryName: src?.categoryName,
         createdAt: src?.createdAt,
+        highlight: hit.highlight
+          ? {
+              title: hit.highlight.title,
+              content: hit.highlight.content,
+            }
+          : undefined,
       };
     });
 

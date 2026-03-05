@@ -30,7 +30,7 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Header />
-          <main className="mx-auto flex max-w-6xl gap-8 px-4 py-8 sm:px-6">
+          <main className="mx-auto flex max-w-7xl gap-8 px-4 py-8 sm:px-6">
             <div className="min-w-0 flex-1">{children}</div>
             <RealTimeKeywords />
           </main>

@@ -10,6 +10,7 @@ type SearchItem = {
   title: string;
   categoryName: string;
   createdAt: string;
+  highlight?: { title?: string[]; content?: string[] };
 };
 
 type SearchResponse = {
@@ -114,13 +115,33 @@ export default function SearchPage() {
                     <td className="p-3 text-sm text-slate-600 dark:text-slate-400">
                       {item.categoryName}
                     </td>
-                    <td className="p-3">
-                      <Link
-                        href={`/posts/${item.id}`}
-                        className="font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
-                      >
-                        {item.title}
-                      </Link>
+                    <td className="min-w-0 p-3">
+                      <div className="min-w-0">
+                        <Link
+                          href={`/posts/${item.id}`}
+                          title={item.title}
+                          className="block truncate font-medium text-blue-600 transition-colors hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 [&_mark]:bg-yellow-200 [&_mark]:dark:bg-yellow-900/50"
+                        >
+                          {item.highlight?.title?.[0] ? (
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: item.highlight.title[0],
+                              }}
+                            />
+                          ) : (
+                            item.title
+                          )}
+                        </Link>
+                        {item.highlight?.content?.[0] && (
+                          <p className="mt-1 line-clamp-2 text-xs text-slate-500 dark:text-slate-400 [&_mark]:bg-yellow-200 [&_mark]:dark:bg-yellow-900/50">
+                            <span
+                              dangerouslySetInnerHTML={{
+                                __html: item.highlight.content[0],
+                              }}
+                            />
+                          </p>
+                        )}
+                      </div>
                     </td>
                     <td className="p-3 text-sm text-slate-500 dark:text-slate-400">
                       {new Date(item.createdAt).toLocaleDateString('ko-KR')}
