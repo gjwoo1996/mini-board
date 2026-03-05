@@ -6,6 +6,10 @@ import {
   UpdateDateColumn,
   OneToMany,
 } from 'typeorm';
+import { Post } from '../../posts/entities/post.entity';
+import { Comment } from '../../comments/entities/comment.entity';
+import { Like } from '../../posts/entities/like.entity';
+import { RefreshToken } from '../../auth/entities/refresh-token.entity';
 
 export enum UserRole {
   USER = 'user',
@@ -47,15 +51,15 @@ export class User {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany('Post', 'author')
-  posts: any[];
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
 
-  @OneToMany('Comment', 'author')
-  comments: any[];
+  @OneToMany(() => Comment, (comment) => comment.author)
+  comments: Comment[];
 
-  @OneToMany('Like', 'user')
-  likes: any[];
+  @OneToMany(() => Like, (like) => like.user)
+  likes: Like[];
 
-  @OneToMany('RefreshToken', 'user')
-  refreshTokens: any[];
+  @OneToMany(() => RefreshToken, (token) => token.user)
+  refreshTokens: RefreshToken[];
 }

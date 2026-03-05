@@ -1,19 +1,23 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAuth } from '@/lib/auth';
 
 export function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      const params = new URLSearchParams({ q: searchQuery.trim() });
+      const categoryMatch = pathname?.match(/^\/categories\/([^/]+)$/);
+      if (categoryMatch) params.set('category', categoryMatch[1]);
+      router.push(`/search?${params}`);
     }
   };
 
@@ -29,17 +33,17 @@ export function Header() {
           </Link>
           <nav className="hidden sm:flex items-center gap-1">
             <Link
-              href="/board"
+              href="/categories"
               className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
             >
-              게시판
+              카테고리
             </Link>
           </nav>
         </div>
 
         <form
           onSubmit={handleSearch}
-          className="flex flex-1 max-w-sm items-center gap-2 px-4"
+          className="flex flex-1 max-w-xl items-center gap-2 px-4"
         >
           <input
             type="text"

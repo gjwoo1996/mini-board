@@ -9,14 +9,21 @@ import { CategoriesModule } from './categories/categories.module';
 import { CommentsModule } from './comments/comments.module';
 import { SearchModule } from './search/search.module';
 import { UploadsModule } from './uploads/uploads.module';
+import { KeywordsModule } from './keywords/keywords.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
-  imports: [DatabaseModule, AuthModule, PostsModule, CategoriesModule, CommentsModule, SearchModule, UploadsModule],
-  controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
+  imports: [
+    DatabaseModule,
+    AuthModule,
+    PostsModule,
+    CategoriesModule,
+    CommentsModule,
+    SearchModule,
+    UploadsModule,
+    KeywordsModule,
   ],
+  controllers: [AppController],
+  providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
 })
 export class AppModule {}

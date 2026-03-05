@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth';
 import { api, getToken } from '@/lib/api';
@@ -18,22 +18,22 @@ export default function AdminPage() {
   const [editSlug, setEditSlug] = useState('');
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    if (!authLoading && (!user || user.role !== 'admin')) {
-      router.push('/');
-      return;
-    }
-    fetchCategories();
-  }, [user, authLoading, router]);
-
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const data = await api<Category[]>('/categories');
       setCategories(data);
     } catch {
       setCategories([]);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && (!user || user.role !== 'admin')) {
+      router.push('/');
+      return;
+    }
+    queueMicrotask(() => fetchCategories());
+  }, [user, authLoading, router, fetchCategories]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();

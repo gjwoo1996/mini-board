@@ -1,4 +1,9 @@
-import { Controller, Post, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import * as path from 'path';
@@ -33,8 +38,9 @@ export class UploadsController {
   )
   upload(
     @UploadedFile() file: Express.Multer.File,
-    @CurrentUser() _user: User,
+    @CurrentUser() _user: User, // Required for auth guard
   ) {
+    void _user;
     return { path: file.filename };
   }
 }

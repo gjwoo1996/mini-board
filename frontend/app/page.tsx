@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { api, UPLOAD_BASE } from '@/lib/api';
 
 type Post = {
@@ -57,11 +58,13 @@ export default async function HomePage() {
                 className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
               >
                 {post.images?.[0] && (
-                  <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
-                    <img
+                  <div className="relative h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-slate-200 dark:bg-slate-800">
+                    <Image
                       src={`${UPLOAD_BASE}/${post.images[0].filePath}`}
                       alt=""
-                      className="h-full w-full object-cover"
+                      fill
+                      className="object-cover"
+                      unoptimized
                     />
                   </div>
                 )}

@@ -1,4 +1,10 @@
-import { IsString, IsEmail, IsEnum, MinLength, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsEmail,
+  IsEnum,
+  MinLength,
+  MaxLength,
+} from 'class-validator';
 import { Gender } from '../../users/entities/user.entity';
 
 export class RegisterDto {

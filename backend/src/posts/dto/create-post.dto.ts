@@ -24,13 +24,16 @@ export class CreatePostDto {
 
   @IsArray()
   @ArrayMaxSize(5)
-  @Transform(({ value }) => {
-    if (Array.isArray(value)) return value;
+  @Transform(({ value }): string[] => {
+    if (Array.isArray(value)) return value as string[];
     if (typeof value === 'string') {
       try {
-        return value ? JSON.parse(value) : [];
+        return value ? (JSON.parse(value) as string[]) : [];
       } catch {
-        return value.split(',').map((s: string) => s.trim()).filter(Boolean);
+        return value
+          .split(',')
+          .map((s: string) => s.trim())
+          .filter((s): s is string => Boolean(s));
       }
     }
     return [];

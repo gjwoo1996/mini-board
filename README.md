@@ -12,10 +12,10 @@
 ### 로컬 실행
 ```bash
 # 백엔드 (MySQL, Elasticsearch 실행 필요)
-cd backend && npm run start:dev
+cd backend && yarn start:dev
 
 # 프론트엔드
-cd frontend && npm run dev
+cd frontend && yarn dev
 ```
 
 - 백엔드: http://localhost:3001

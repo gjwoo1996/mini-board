@@ -290,7 +290,9 @@ function EmojiPickerButton({ editor }: { editor: Editor }) {
   }, []);
 
   useEffect(() => {
-    if (open) updatePosition();
+    if (open) {
+      requestAnimationFrame(() => updatePosition());
+    }
   }, [open, updatePosition]);
 
   const filteredEmojis = useMemo(() => {

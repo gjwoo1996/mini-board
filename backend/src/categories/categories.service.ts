@@ -20,6 +20,12 @@ export class CategoriesService {
     return cat;
   }
 
+  async findBySlug(slug: string) {
+    const cat = await this.categoryRepo.findOne({ where: { slug } });
+    if (!cat) throw new NotFoundException('Category not found');
+    return cat;
+  }
+
   create(name: string, slug: string) {
     return this.categoryRepo.save({ name, slug: slug || this.slugify(name) });
   }

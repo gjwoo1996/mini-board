@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/lib/auth';
 import { api, getToken, UPLOAD_BASE } from '@/lib/api';
 
@@ -47,7 +48,7 @@ export default function PostDetailPage() {
   const [editingComment, setEditingComment] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
 
-  const fetchPost = async () => {
+  const fetchPost = useCallback(async () => {
     try {
       const data = await api<Post>(`/posts/${id}`);
       setPost(data);
@@ -56,21 +57,21 @@ export default function PostDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const fetchComments = async () => {
+  const fetchComments = useCallback(async () => {
     try {
       const data = await api<Comment[]>(`/posts/${id}/comments`);
       setComments(data);
     } catch {
       setComments([]);
     }
-  };
+  }, [id]);
 
   useEffect(() => {
     fetchPost();
     fetchComments();
-  }, [id]);
+  }, [fetchPost, fetchComments]);
 
   const handleLike = async () => {
     if (!user) {
@@ -312,12 +313,18 @@ export default function PostDetailPage() {
       {post.images?.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {post.images.map((img) => (
-            <img
+            <div
               key={img.filePath}
-              src={`${UPLOAD_BASE}/${img.filePath}`}
-              alt=""
-              className="max-h-64 rounded-lg object-cover shadow-sm"
-            />
+              className="relative h-64 w-48 overflow-hidden rounded-lg shadow-sm"
+            >
+              <Image
+                src={`${UPLOAD_BASE}/${img.filePath}`}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
           ))}
         </div>
       )}
@@ -352,7 +359,11 @@ export default function PostDetailPage() {
       <div className="mt-6 flex flex-wrap gap-2 border-t border-slate-200 pt-4 dark:border-slate-700">
         <button
           onClick={handleLike}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"
+          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            liked
+              ? 'bg-blue-700 text-white dark:bg-blue-600'
+              : 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+          }`}
         >
           좋아요 {post.likeCount}
         </button>

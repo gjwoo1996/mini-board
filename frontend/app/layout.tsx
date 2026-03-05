@@ -5,6 +5,7 @@ import { Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth";
 import { Header } from "@/components/Header";
+import { RealTimeKeywords } from "@/components/RealTimeKeywords";
 
 const notoSansKR = Noto_Sans_KR({
   variable: "--font-noto-sans-kr",
@@ -29,7 +30,10 @@ export default function RootLayout({
       >
         <AuthProvider>
           <Header />
-          <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6">{children}</main>
+          <main className="mx-auto flex max-w-6xl gap-8 px-4 py-8 sm:px-6">
+            <div className="min-w-0 flex-1">{children}</div>
+            <RealTimeKeywords />
+          </main>
         </AuthProvider>
       </body>
     </html>

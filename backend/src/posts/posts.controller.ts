@@ -81,15 +81,13 @@ export class PostsController {
     @CurrentUser() user: User,
     @UploadedFiles() files?: { images?: Express.Multer.File[] },
   ) {
-    const tags =
+    const tags: string[] =
       typeof dto.tags === 'string'
-        ? (dto.tags ? JSON.parse(dto.tags) : [])
-        : dto.tags || [];
-    return this.postsService.create(
-      { ...dto, tags },
-      user,
-      files?.images,
-    );
+        ? dto.tags
+          ? (JSON.parse(dto.tags) as string[])
+          : []
+        : (dto.tags ?? []);
+    return this.postsService.create({ ...dto, tags }, user, files?.images);
   }
 
   @Patch(':id')
@@ -98,10 +96,12 @@ export class PostsController {
     @Body() dto: UpdatePostDto,
     @CurrentUser() user: User,
   ) {
-    const tags =
+    const tags: string[] | undefined =
       dto.tags !== undefined
         ? typeof dto.tags === 'string'
-          ? (dto.tags ? JSON.parse(dto.tags) : [])
+          ? dto.tags
+            ? (JSON.parse(dto.tags) as string[])
+            : []
           : dto.tags
         : undefined;
     return this.postsService.update(+id, { ...dto, tags }, user);

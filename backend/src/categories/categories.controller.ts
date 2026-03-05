@@ -6,8 +6,6 @@ import {
   Param,
   Patch,
   Post,
-  UsePipes,
-  ValidationPipe,
 } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
@@ -29,6 +27,12 @@ export class CategoriesController {
   }
 
   @Public()
+  @Get('slug/:slug')
+  findBySlug(@Param('slug') slug: string) {
+    return this.categoriesService.findBySlug(slug);
+  }
+
+  @Public()
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.categoriesService.findOne(+id);
@@ -44,10 +48,7 @@ export class CategoriesController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateCategoryDto,
-  ) {
+  update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.categoriesService.update(+id, dto.name, dto.slug);
   }
 

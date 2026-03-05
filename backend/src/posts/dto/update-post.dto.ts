@@ -28,8 +28,10 @@ export class UpdatePostDto {
   @IsOptional()
   @IsArray()
   @ArrayMaxSize(5)
-  @Transform(({ value }) =>
-    typeof value === 'string' ? JSON.parse(value || '[]') : value,
+  @Transform(({ value }): string[] | undefined =>
+    typeof value === 'string'
+      ? (JSON.parse(value || '[]') as string[])
+      : (value as string[] | undefined),
   )
   tags?: string[];
 }

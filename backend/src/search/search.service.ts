@@ -36,29 +36,29 @@ export class SearchService implements OnModuleInit {
       },
       mappings: {
         properties: {
-            id: { type: 'long' },
-            title: {
-              type: 'text',
-              analyzer: 'nori_analyzer',
-              fields: { keyword: { type: 'keyword' } },
+          id: { type: 'long' },
+          title: {
+            type: 'text',
+            analyzer: 'nori_analyzer',
+            fields: { keyword: { type: 'keyword' } },
+          },
+          content: { type: 'text', analyzer: 'nori_analyzer' },
+          tags: {
+            type: 'text',
+            analyzer: 'nori_analyzer',
+            fields: { keyword: { type: 'keyword' } },
+          },
+          categoryId: { type: 'long' },
+          categoryName: {
+            type: 'keyword',
+            fields: {
+              text: { type: 'text', analyzer: 'nori_analyzer' },
             },
-            content: { type: 'text', analyzer: 'nori_analyzer' },
-            tags: {
-              type: 'text',
-              analyzer: 'nori_analyzer',
-              fields: { keyword: { type: 'keyword' } },
-            },
-            categoryId: { type: 'long' },
-            categoryName: {
-              type: 'keyword',
-              fields: {
-                text: { type: 'text', analyzer: 'nori_analyzer' },
-              },
-            },
-            authorId: { type: 'long' },
-            authorName: { type: 'keyword' },
-            createdAt: { type: 'date' },
-            updatedAt: { type: 'date' },
+          },
+          authorId: { type: 'long' },
+          authorName: { type: 'keyword' },
+          createdAt: { type: 'date' },
+          updatedAt: { type: 'date' },
         },
       },
     });
@@ -107,22 +107,20 @@ export class SearchService implements OnModuleInit {
   async deletePost(id: number) {
     try {
       await this.es.delete({ index: INDEX_NAME, id: String(id) });
-    } catch (e: any) {
-      if (e?.meta?.statusCode !== 404) throw e;
+    } catch (e: unknown) {
+      const err = e as { meta?: { statusCode?: number } };
+      if (err?.meta?.statusCode !== 404) throw e;
     }
   }
 
-  async search(q: string, page = 1, size = 50) {
+  async search(q: string, page = 1, size = 50, categoryId?: number) {
     if (!q?.trim()) {
       return { items: [], total: 0, page, size };
     }
 
     const from = (page - 1) * size;
-    const { hits } = await this.es.search({
-      index: INDEX_NAME,
-      from,
-      size,
-      query: {
+    const must: object[] = [
+      {
         multi_match: {
           query: q.trim(),
           fields: ['title^3', 'content', 'tags^2', 'categoryName.text'],
@@ -130,19 +128,43 @@ export class SearchService implements OnModuleInit {
           operator: 'or',
         },
       },
+    ];
+    if (categoryId != null) {
+      must.push({ term: { categoryId } });
+    }
+
+    const { hits } = await this.es.search({
+      index: INDEX_NAME,
+      from,
+      size,
+      query: { bool: { must } },
       sort: [{ createdAt: 'desc' }],
     });
 
-    const items = (hits.hits || []).map((h: any) => ({
-      id: h._source?.id,
-      title: h._source?.title,
-      categoryName: h._source?.categoryName,
-      createdAt: h._source?.createdAt,
-    }));
+    type EsSource = {
+      id?: number;
+      title?: string;
+      categoryName?: string;
+      createdAt?: string;
+    };
+    const items = (hits.hits ?? []).map((h) => {
+      const src = h._source as EsSource | undefined;
+      return {
+        id: src?.id,
+        title: src?.title,
+        categoryName: src?.categoryName,
+        createdAt: src?.createdAt,
+      };
+    });
+
+    type EsTotal = number | { value?: number };
+    const totalVal = hits.total as EsTotal;
+    const total =
+      typeof totalVal === 'number' ? totalVal : (totalVal?.value ?? 0);
 
     return {
       items,
-      total: typeof hits.total === 'number' ? hits.total : (hits.total as any)?.value ?? 0,
+      total,
       page,
       size,
     };

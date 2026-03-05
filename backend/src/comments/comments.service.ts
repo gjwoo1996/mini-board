@@ -29,7 +29,10 @@ export class CommentsService {
     return this.buildTree(comments, null);
   }
 
-  private buildTree(comments: Comment[], parentId: number | null): any[] {
+  private buildTree(
+    comments: Comment[],
+    parentId: number | null,
+  ): (Comment & { replies: ReturnType<CommentsService['buildTree']> })[] {
     return comments
       .filter((c) => c.parentId === parentId)
       .map((c) => ({
@@ -68,7 +71,10 @@ export class CommentsService {
     if (comment.authorId !== user.id) {
       throw new ForbiddenException('Not your comment');
     }
-    await this.commentRepo.update(id, { content: dto.content, isModified: true });
+    await this.commentRepo.update(id, {
+      content: dto.content,
+      isModified: true,
+    });
     return this.commentRepo.findOne({ where: { id }, relations: ['author'] });
   }
 

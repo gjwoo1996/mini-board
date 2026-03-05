@@ -37,7 +37,11 @@ export class PostsService {
     }
   }
 
-  async create(dto: CreatePostDto, author: User, files?: Express.Multer.File[]) {
+  async create(
+    dto: CreatePostDto,
+    author: User,
+    files?: Express.Multer.File[],
+  ) {
     const post = await this.postRepo.save({
       title: dto.title,
       content: dto.content,
@@ -122,15 +126,15 @@ export class PostsService {
 
     const posts = await Promise.all(
       items.map(async (p) => {
-        const commentCount = await this.postRepo.manager
+        const raw = await this.postRepo.manager
           .createQueryBuilder()
           .select('COUNT(*)', 'count')
           .from('comments', 'c')
           .where('c.postId = :postId', { postId: p.id })
-          .getRawOne();
+          .getRawOne<{ count: string }>();
         return {
           ...p,
-          commentCount: parseInt(commentCount?.count || '0', 10),
+          commentCount: parseInt(raw?.count ?? '0', 10),
         };
       }),
     );
@@ -156,22 +160,23 @@ export class PostsService {
       await this.postRepo.increment({ id }, 'viewCount', 1);
       post.viewCount += 1;
     }
-    const commentCount = await this.postRepo.manager
+    const raw = await this.postRepo.manager
       .createQueryBuilder()
       .select('COUNT(*)', 'count')
       .from('comments', 'c')
       .where('c.postId = :postId', { postId: id })
-      .getRawOne();
+      .getRawOne<{ count: string }>();
     return {
       ...post,
-      commentCount: parseInt(commentCount?.count || '0', 10),
+      commentCount: parseInt(raw?.count ?? '0', 10),
     };
   }
 
   async update(id: number, dto: UpdatePostDto, user: User) {
     const post = await this.postRepo.findOne({ where: { id } });
     if (!post) throw new NotFoundException('Post not found');
-    if (post.authorId !== user.id) throw new ForbiddenException('Not your post');
+    if (post.authorId !== user.id)
+      throw new ForbiddenException('Not your post');
     const { tags, ...updateData } = dto;
     await this.postRepo.update(id, {
       ...updateData,
@@ -196,14 +201,22 @@ export class PostsService {
   async remove(id: number, user: User) {
     const post = await this.postRepo.findOne({ where: { id } });
     if (!post) throw new NotFoundException('Post not found');
-    if (post.authorId !== user.id) throw new ForbiddenException('Not your post');
+    if (post.authorId !== user.id)
+      throw new ForbiddenException('Not your post');
     await this.postRepo.remove(post);
     this.searchService.deletePost(id).catch(() => {});
     return { success: true };
   }
 
-  private async syncToSearch(post: any, isUpdate = false) {
-    const tags = (post.tags || []).map((t: any) => t.tagName || t);
+  private async syncToSearch(
+    post: Post & {
+      tags?: { tagName: string }[];
+      category?: { id: number; name: string };
+      author?: { id: number; name: string };
+    },
+    isUpdate = false,
+  ) {
+    const tags = (post.tags ?? []).map((t) => t.tagName ?? '');
     const doc = {
       id: post.id,
       title: post.title,
