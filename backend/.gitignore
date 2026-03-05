@@ -4,6 +4,9 @@
 /build
 /tmp
 
+# Lock file (using yarn.lock)
+package-lock.json
+
 # Logs
 logs
 *.log
@@ -18,7 +21,28 @@ lerna-debug.log*
 .env.development
 .env.test
 .env.production
+.env.local
+.env.*.local
 
 # temp directory
 .temp
 .tmp
+
+# Test coverage
+/coverage
+
+# User uploads (local storage)
+/uploads
+
+# IDE / Editor
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript
+*.tsbuildinfo
